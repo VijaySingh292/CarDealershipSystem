@@ -8,6 +8,7 @@ import AuthContext from './Auth/AuthContext.js'; // Adjust path as per your file
 import SellData from './models/sellData.js';
 import ServiceData from './models/ServiceData.js';
 import Car from './models/buy.js';
+import Search from "./models/search.js";
 
 const app = express();
 const port = 4000;
@@ -397,3 +398,37 @@ mongoose.connect('mongodb://localhost:27017/vijay', { useNewUrlParser: true, use
     }
   });
   
+  app.get("/search", async (req, res) => {
+    try {
+        const { 
+            name, company, launchYear, minPrice, maxPrice, engineType, engineCapacity,
+            bodyStyle, materialUsed, suspensionType, brakes, steeringType,
+            fuelTankCapacity, batteryCapacity, parkingAssistance 
+        } = req.query;
+
+        let query = {};
+
+        if (name) query.name = { $regex: new RegExp(name, "i") }; // Case-insensitive search
+        if (company) query.company = { $regex: new RegExp(company, "i") }; 
+        if (launchYear) query.launchYear = Number(launchYear); 
+
+        if (minPrice) query.price = { ...query.price, $gte: Number(minPrice) };
+        if (maxPrice) query.price = { ...query.price, $lte: Number(maxPrice) };
+
+        if (engineType) query.engineType = { $regex: new RegExp(engineType, "i") };
+        if (engineCapacity) query.engineCapacity = { $regex: new RegExp(engineCapacity, "i") };
+        if (bodyStyle) query.bodyStyle = { $regex: new RegExp(bodyStyle, "i") };
+        if (materialUsed) query.materialUsed = { $regex: new RegExp(materialUsed, "i") };
+        if (suspensionType) query.suspensionType = { $regex: new RegExp(suspensionType, "i") };
+        if (brakes) query.brakes = { $regex: new RegExp(brakes, "i") };
+        if (steeringType) query.steeringType = { $regex: new RegExp(steeringType, "i") };
+        if (fuelTankCapacity) query.fuelTankCapacity = { $regex: new RegExp(fuelTankCapacity, "i") };
+        if (batteryCapacity) query.batteryCapacity = { $regex: new RegExp(batteryCapacity, "i") };
+        if (parkingAssistance) query.parkingAssistance = { $regex: new RegExp(parkingAssistance, "i") };
+
+        const searchData = await Search.find(query);
+        res.json(searchData);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
